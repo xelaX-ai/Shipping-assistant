@@ -36,6 +36,52 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 
+      - name: Inject global error handler into index.html
+        run: |
+          python3 - <<'EOF'
+          import re
+
+          error_script = """<script>
+          window.onerror = function(msg, src, line, col, err) {
+            document.body.style.background = '#0F172A';
+            document.body.style.margin = '0';
+            document.body.style.padding = '20px';
+            document.body.style.fontFamily = 'monospace';
+            document.body.innerHTML =
+              '<h2 style="color:#F87171;margin:0 0 8px">\\u26a0\\ufe0f JavaScript Error</h2>' +
+              '<p style="color:#94A3B8;margin:0 0 16px;font-size:13px">Copy and send to developer</p>' +
+              '<pre style="color:#CBD5E1;font-size:12px;line-height:1.6;white-space:pre-wrap;' +
+              'word-break:break-all;background:#1E293B;padding:14px;border-radius:8px">' +
+              msg + '\\n\\nFile: ' + src + '\\nLine: ' + line + ', Col: ' + col +
+              (err ? '\\n\\nStack:\\n' + err.stack : '') + '</pre>';
+            return false;
+          };
+          window.addEventListener('unhandledrejection', function(e) {
+            document.body.style.background = '#0F172A';
+            document.body.style.margin = '0';
+            document.body.style.padding = '20px';
+            document.body.style.fontFamily = 'monospace';
+            document.body.innerHTML =
+              '<h2 style="color:#F87171;margin:0 0 8px">\\u26a0\\ufe0f Unhandled Promise Rejection</h2>' +
+              '<p style="color:#94A3B8;margin:0 0 16px;font-size:13px">Copy and send to developer</p>' +
+              '<pre style="color:#CBD5E1;font-size:12px;line-height:1.6;white-space:pre-wrap;' +
+              'word-break:break-all;background:#1E293B;padding:14px;border-radius:8px">' +
+              String(e.reason) +
+              (e.reason && e.reason.stack ? '\\n\\n' + e.reason.stack : '') + '</pre>';
+          });
+          </script>"""
+
+          with open('dist/index.html', 'r') as f:
+              html = f.read()
+
+          html = html.replace('<script src=', error_script + '\n  <script src=', 1)
+
+          with open('dist/index.html', 'w') as f:
+              f.write(html)
+
+          print("Error handler injected successfully")
+          EOF
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
