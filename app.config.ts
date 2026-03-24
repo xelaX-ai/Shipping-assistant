@@ -16,7 +16,10 @@ const config: ExpoConfig = {
     },
     package: "com.yourcompany.shippingassistant",
   },
-  plugins: ["expo-router", "expo-asset"],
+  plugins: [
+    ["expo-router", { origin: "https://xelax-ai.github.io/Shipping-assistant/" }],
+    "expo-asset",
+  ],
   scheme: "shipping-assistant",
   extra: {
     GEMINI_API_KEY: process.env.GEMINI_API_KEY,
