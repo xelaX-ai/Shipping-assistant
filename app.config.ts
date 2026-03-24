@@ -16,6 +16,11 @@ const config: ExpoConfig = {
     },
     package: "com.yourcompany.shippingassistant",
   },
+  web: {
+    bundler: "metro",
+    output: "static",
+    favicon: "./assets/favicon.png",
+  },
   plugins: ["expo-router", "expo-asset"],
   scheme: "shipping-assistant",
   extra: {
