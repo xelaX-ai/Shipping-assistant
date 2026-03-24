@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   SafeAreaView,
+  Platform,
   LayoutAnimation,
 } from "react-native";
 import { MANUALS, Manual, ManualSection } from "../data/manuals";
@@ -25,7 +26,9 @@ function SectionCard({
       <TouchableOpacity
         style={styles.sectionHeader}
         onPress={() => {
-          LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+          if (Platform.OS !== "web") {
+            LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+          }
           setExpanded((v) => !v);
         }}
         activeOpacity={0.7}
@@ -70,7 +73,9 @@ function CarrierBlock({ manual }: { manual: Manual }) {
       <TouchableOpacity
         style={[styles.carrierHeader, { backgroundColor: manual.color }]}
         onPress={() => {
-          LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+          if (Platform.OS !== "web") {
+            LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+          }
           setOpen((v) => !v);
         }}
         activeOpacity={0.85}

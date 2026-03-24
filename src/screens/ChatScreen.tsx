@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import {
   View,
   Text,
@@ -29,10 +29,18 @@ export default function ChatScreen() {
       role: "assistant",
       content:
         "👋 Привіт! Я асистент з питань відправки посилок.\n\nМоглу відповісти на питання про:\n• 🔴 Нова Пошта\n• 🟡 DHL Express\n\nЗадайте питання або оберіть з поширених нижче.",
-      timestamp: new Date(),
+      timestamp: new Date(0),
     },
   ]);
   const [input, setInput] = useState("");
+
+  useEffect(() => {
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.id === "welcome" ? { ...msg, timestamp: new Date() } : msg
+      )
+    );
+  }, []);
   const [isLoading, setIsLoading] = useState(false);
   const flatListRef = useRef<FlatList>(null);
 
