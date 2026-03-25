@@ -41,6 +41,7 @@ export default function ChatScreen() {
       )
     );
   }, []);
+
   const [isLoading, setIsLoading] = useState(false);
   const flatListRef = useRef<FlatList>(null);
 
@@ -111,6 +112,19 @@ export default function ChatScreen() {
     );
   };
 
+  const WELCOME_MESSAGE: Message = {
+    id: "welcome",
+    role: "assistant",
+    content:
+      "👋 Привіт! Я асистент з питань відправки посилок.\n\nМоглу відповісти на питання про:\n• 🔴 Нова Пошта\n• 🟡 DHL Express\n\nЗадайте питання або оберіть з поширених нижче.",
+    timestamp: new Date(0),
+  };
+
+  const clearChat = useCallback(() => {
+    setMessages([{ ...WELCOME_MESSAGE, timestamp: new Date() }]);
+    setInput("");
+  }, []);
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
@@ -118,10 +132,14 @@ export default function ChatScreen() {
         <View style={styles.headerIcon}>
           <Text style={styles.headerIconText}>📦</Text>
         </View>
-        <View>
+        <View style={styles.flex}>
           <Text style={styles.headerTitle}>Shipping Assistant</Text>
           <Text style={styles.headerSubtitle}>Нова Пошта · DHL Express</Text>
         </View>
+        <TouchableOpacity style={styles.clearButton} onPress={clearChat}>
+          <Ionicons name="refresh" size={16} color="#64748B" />
+          <Text style={styles.clearButtonText}>Новий чат</Text>
+        </TouchableOpacity>
       </View>
 
       <KeyboardAvoidingView
@@ -216,6 +234,20 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   headerIconText: { fontSize: 20 },
+  clearButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    backgroundColor: "#1E293B",
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  clearButtonText: {
+    color: "#64748B",
+    fontSize: 12,
+    fontWeight: "600",
+  },
   headerTitle: { color: "white", fontSize: 16, fontWeight: "700" },
   headerSubtitle: { color: "#64748B", fontSize: 12, marginTop: 1 },
   messageList: { padding: 16, gap: 12, paddingBottom: 8 },
