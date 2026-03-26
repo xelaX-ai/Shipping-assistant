@@ -3,7 +3,7 @@ import { buildManualContext, SYSTEM_PROMPT } from "../data/manuals";
 
 const API_KEY = Constants.expoConfig?.extra?.GEMINI_API_KEY;
 const API_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
 export interface Message {
   id: string;
