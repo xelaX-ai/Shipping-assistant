@@ -141,8 +141,12 @@ export default function ChatScreen() {
           <Text style={styles.headerTitle}>Shipping Assistant</Text>
           <Text style={styles.headerSubtitle}>Нова Пошта · DHL Express</Text>
         </View>
-        <TouchableOpacity style={styles.clearButton} onPress={clearChat}>
-          <Ionicons name="refresh" size={16} color="#64748B" />
+        <TouchableOpacity
+          style={styles.clearButton}
+          onPress={clearChat}
+          activeOpacity={0.5}
+        >
+          <Ionicons name="refresh" size={16} color="white" />
           <Text style={styles.clearButtonText}>Новий чат</Text>
         </TouchableOpacity>
       </View>
@@ -243,13 +247,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
-    backgroundColor: "#1E293B",
+    backgroundColor: "#16A34A",
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 6,
   },
   clearButtonText: {
-    color: "#64748B",
+    color: "white",
     fontSize: 12,
     fontWeight: "600",
   },
