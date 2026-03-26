@@ -2,8 +2,8 @@ import Constants from "expo-constants";
 import { buildManualContext, SYSTEM_PROMPT } from "../data/manuals";
 
 const API_KEY = Constants.expoConfig?.extra?.GEMINI_API_KEY;
-const API_URL = "https://api.groq.com/openai/v1/chat/completions";
-const MODEL = "llama-3.3-70b-versatile";
+const API_URL = "https://openrouter.ai/api/v1/chat/completions";
+const MODEL = "meta-llama/llama-3.3-70b-instruct:free";
 
 export interface Message {
   id: string;
@@ -17,7 +17,7 @@ export async function askGemini(
   history: Message[]
 ): Promise<string> {
   if (!API_KEY || API_KEY === "YOUR_GEMINI_API_KEY_HERE") {
-    return "⚠️ API ключ не налаштовано.\n\nОтримати безкоштовно: https://console.groq.com";
+    return "⚠️ API ключ не налаштовано.\n\nОтримати безкоштовно: https://openrouter.ai";
   }
 
   const manualContext = buildManualContext();
@@ -42,6 +42,8 @@ export async function askGemini(
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${API_KEY}`,
+        "HTTP-Referer": "https://xelax-ai.github.io",
+        "X-Title": "Shipping Assistant",
       },
       body: JSON.stringify({
         model: MODEL,
@@ -54,7 +56,7 @@ export async function askGemini(
 
     if (!response.ok) {
       const error = await response.json();
-      console.error("Groq API error:", error);
+      console.error("OpenRouter API error:", error);
       return `Помилка API: ${error.error?.message || "Невідома помилка"}`;
     }
 
