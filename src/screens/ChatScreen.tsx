@@ -14,6 +14,7 @@ import {
 import { Message, askGemini } from "../services/gemini";
 import { Ionicons } from "@expo/vector-icons";
 import Markdown from "react-native-markdown-display";
+import { ApiKeyModal } from "../components/ApiKeyModal";
 
 const QUICK_QUESTIONS = [
   "Як створити відправлення через Нову Пошту?",
@@ -32,6 +33,7 @@ export default function ChatScreen() {
     },
   ]);
   const [input, setInput] = useState("");
+  const [showSettings, setShowSettings] = useState(false);
 
   useEffect(() => {
     setMessages((prev) =>
@@ -139,15 +141,29 @@ export default function ChatScreen() {
           <Text style={styles.headerTitle}>Shipping Assistant</Text>
           <Text style={styles.headerSubtitle}>Нова Пошта · DHL Express</Text>
         </View>
-        <TouchableOpacity
-          style={styles.clearButton}
-          onPress={clearChat}
-          activeOpacity={0.5}
-        >
-          <Ionicons name="refresh" size={16} color="white" />
-          <Text style={styles.clearButtonText}>Новий чат</Text>
-        </TouchableOpacity>
+        <View style={styles.headerButtons}>
+          <TouchableOpacity
+            style={styles.clearButton}
+            onPress={clearChat}
+            activeOpacity={0.5}
+          >
+            <Ionicons name="refresh" size={16} color="white" />
+            <Text style={styles.clearButtonText}>Новий чат</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.settingsButton}
+            onPress={() => setShowSettings(true)}
+            activeOpacity={0.5}
+          >
+            <Ionicons name="settings-outline" size={20} color="#64748B" />
+          </TouchableOpacity>
+        </View>
       </View>
+
+      <ApiKeyModal
+        visible={showSettings}
+        onClose={() => setShowSettings(false)}
+      />
 
       <KeyboardAvoidingView
         style={styles.flex}
@@ -241,6 +257,19 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   headerIconText: { fontSize: 20 },
+  headerButtons: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  settingsButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    backgroundColor: "#1E293B",
+    alignItems: "center",
+    justifyContent: "center",
+  },
   clearButton: {
     flexDirection: "row",
     alignItems: "center",

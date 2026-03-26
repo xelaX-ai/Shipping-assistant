@@ -1,9 +1,8 @@
-import Constants from "expo-constants";
 import { buildManualContext, SYSTEM_PROMPT } from "../data/manuals";
+import { getActiveKey } from "../utils/keyStorage";
 
-const API_KEY = Constants.expoConfig?.extra?.GEMINI_API_KEY;
-const API_URL = "https://openrouter.ai/api/v1/chat/completions";
-const MODEL = "google/gemini-2.0-flash-exp:free";
+const API_URL =
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
 export interface Message {
   id: string;
@@ -16,8 +15,10 @@ export async function askGemini(
   question: string,
   history: Message[]
 ): Promise<string> {
-  if (!API_KEY || API_KEY === "YOUR_GEMINI_API_KEY_HERE") {
-    return "⚠️ API ключ не налаштовано.\n\nОтримати безкоштовно: https://openrouter.ai";
+  const API_KEY = getActiveKey();
+
+  if (!API_KEY) {
+    return "⚠️ API ключ не налаштовано.\n\nНатисни ⚙️ в правому верхньому куті та введи Gemini API ключ.\n\nОтримати безкоштовно: https://aistudio.google.com/app/apikey";
   }
 
   const manualContext = buildManualContext();
@@ -27,47 +28,60 @@ export async function askGemini(
     .filter((msg) => msg.id !== "welcome")
     .slice(-20);
 
-  const messages = [
-    { role: "system", content: systemInstruction },
-    ...recentHistory.map((msg) => ({
-      role: msg.role,
-      content: msg.content,
-    })),
-    { role: "user", content: question },
+  const historyContents = recentHistory.map((msg) => ({
+    role: msg.role === "assistant" ? "model" : "user",
+    parts: [{ text: msg.content }],
+  }));
+
+  while (historyContents.length > 0 && historyContents[0].role === "model") {
+    historyContents.shift();
+  }
+
+  const contents = [
+    ...historyContents,
+    { role: "user", parts: [{ text: question }] },
   ];
 
   try {
-    const response = await fetch(API_URL, {
+    const response = await fetch(`${API_URL}?key=${API_KEY}`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${API_KEY}`,
-        "HTTP-Referer": "https://xelax-ai.github.io",
-        "X-Title": "Shipping Assistant",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: MODEL,
-        messages,
-        temperature: 0.1,
-        max_tokens: 4096,
-        top_p: 0.8,
+        system_instruction: { parts: [{ text: systemInstruction }] },
+        contents,
+        generationConfig: {
+          temperature: 0.1,
+          maxOutputTokens: 8192,
+          topP: 0.8,
+        },
+        safetySettings: [
+          {
+            category: "HARM_CATEGORY_HARASSMENT",
+            threshold: "BLOCK_MEDIUM_AND_ABOVE",
+          },
+        ],
       }),
     });
 
     if (!response.ok) {
       const error = await response.json();
-      console.error("OpenRouter API error:", error);
+      console.error("Gemini API error:", error);
       return `Помилка API: ${error.error?.message || "Невідома помилка"}`;
     }
 
     const data = await response.json();
-    const text = data.choices?.[0]?.message?.content;
+    const parts = data.candidates?.[0]?.content?.parts;
 
-    if (!text) {
+    if (!parts || parts.length === 0) {
       return "Не вдалося отримати відповідь. Спробуйте ще раз.";
     }
 
-    return text;
+    const fullText = parts
+      .map((item: { text?: string }) => item.text || "")
+      .filter(Boolean)
+      .join("\n");
+
+    return fullText || "Не вдалося отримати відповідь. Спробуйте ще раз.";
   } catch (error) {
     console.error("Network error:", error);
     return "Помилка мережі. Перевірте підключення до інтернету.";
