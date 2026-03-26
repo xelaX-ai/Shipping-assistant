@@ -34,7 +34,7 @@ jobs:
       - name: Build web
         run: npx expo export --platform web
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
 
       - name: Inject global error handler into index.html
         run: |

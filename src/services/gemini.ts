@@ -2,8 +2,8 @@ import Constants from "expo-constants";
 import { buildManualContext, SYSTEM_PROMPT } from "../data/manuals";
 
 const API_KEY = Constants.expoConfig?.extra?.GEMINI_API_KEY;
-const API_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
+const API_URL = "https://api.groq.com/openai/v1/chat/completions";
+const MODEL = "llama-3.3-70b-versatile";
 
 export interface Message {
   id: string;
@@ -17,7 +17,7 @@ export async function askGemini(
   history: Message[]
 ): Promise<string> {
   if (!API_KEY || API_KEY === "YOUR_GEMINI_API_KEY_HERE") {
-    return "⚠️ API ключ не налаштовано. Відкрийте файл app.config.ts і вставте ваш Gemini API ключ.\n\nОтримати безкоштовно: https://aistudio.google.com/app/apikey";
+    return "⚠️ API ключ не налаштовано.\n\nОтримати безкоштовно: https://console.groq.com";
   }
 
   const manualContext = buildManualContext();
@@ -27,68 +27,45 @@ export async function askGemini(
     .filter((msg) => msg.id !== "welcome")
     .slice(-20);
 
-  const historyContents = recentHistory.map((msg) => ({
-    role: msg.role === "assistant" ? "model" : "user",
-    parts: [{ text: msg.content }],
-  }));
-
-  // Gemini requires contents to start with "user" role
-  while (historyContents.length > 0 && historyContents[0].role === "model") {
-    historyContents.shift();
-  }
-
-  const contents = [
-    ...historyContents,
-    { role: "user", parts: [{ text: question }] },
+  const messages = [
+    { role: "system", content: systemInstruction },
+    ...recentHistory.map((msg) => ({
+      role: msg.role,
+      content: msg.content,
+    })),
+    { role: "user", content: question },
   ];
 
   try {
-    const response = await fetch(`${API_URL}?key=${API_KEY}`, {
+    const response = await fetch(API_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${API_KEY}`,
       },
       body: JSON.stringify({
-        system_instruction: { parts: [{ text: systemInstruction }] },
-        contents,
-        generationConfig: {
-          temperature: 0.1,
-          maxOutputTokens: 8192,
-          topP: 0.8,
-        },
-        safetySettings: [
-          {
-            category: "HARM_CATEGORY_HARASSMENT",
-            threshold: "BLOCK_MEDIUM_AND_ABOVE",
-          },
-        ],
-        tools: [{ googleSearch: {} }],
+        model: MODEL,
+        messages,
+        temperature: 0.1,
+        max_tokens: 4096,
+        top_p: 0.8,
       }),
     });
 
     if (!response.ok) {
       const error = await response.json();
-      console.error("Gemini API error:", error);
+      console.error("Groq API error:", error);
       return `Помилка API: ${error.error?.message || "Невідома помилка"}`;
     }
 
     const data = await response.json();
-    const parts = data.candidates?.[0]?.content?.parts;
+    const text = data.choices?.[0]?.message?.content;
 
-    if (!parts || parts.length === 0) {
+    if (!text) {
       return "Не вдалося отримати відповідь. Спробуйте ще раз.";
     }
 
-    const fullText = parts
-      .map((item: { text?: string }) => item.text || "")
-      .filter(Boolean)
-      .join("\n");
-
-    if (!fullText) {
-      return "Не вдалося отримати відповідь. Спробуйте ще раз.";
-    }
-
-    return fullText;
+    return text;
   } catch (error) {
     console.error("Network error:", error);
     return "Помилка мережі. Перевірте підключення до інтернету.";
