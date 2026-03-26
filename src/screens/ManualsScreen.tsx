@@ -66,7 +66,7 @@ function SectionCard({
 }
 
 function CarrierBlock({ manual }: { manual: Manual }) {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
 
   return (
     <View style={styles.carrierBlock}>
