@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { Message, askGemini } from "../services/gemini";
 import { Ionicons } from "@expo/vector-icons";
+import Markdown from "react-native-markdown-display";
 
 const QUICK_QUESTIONS = [
   "Як правильно упакувати крихкий товар?",
@@ -99,9 +100,13 @@ export default function ChatScreen() {
             <Text style={styles.senderLabel}>Асистент</Text>
           </View>
         )}
-        <Text style={[styles.messageText, isUser && styles.userMessageText]}>
-          {item.content}
-        </Text>
+        {isUser ? (
+          <Text style={[styles.messageText, styles.userMessageText]}>
+            {item.content}
+          </Text>
+        ) : (
+          <Markdown style={markdownStyles}>{item.content}</Markdown>
+        )}
         <Text style={[styles.timestamp, isUser && styles.userTimestamp]}>
           {item.timestamp.toLocaleTimeString("uk-UA", {
             hour: "2-digit",
@@ -343,3 +348,28 @@ const styles = StyleSheet.create({
   },
   sendButtonDisabled: { backgroundColor: "#D1D5DB" },
 });
+
+const markdownStyles = {
+  body: { color: "#1F2937", fontSize: 15, lineHeight: 22 },
+  strong: { fontWeight: "700" as const, color: "#1F2937" },
+  em: { fontStyle: "italic" as const },
+  bullet_list: { marginVertical: 2 },
+  ordered_list: { marginVertical: 2 },
+  list_item: { marginVertical: 1 },
+  paragraph: { marginVertical: 2 },
+  code_inline: {
+    backgroundColor: "#F3F4F6",
+    borderRadius: 4,
+    paddingHorizontal: 4,
+    fontFamily: "monospace",
+    fontSize: 13,
+    color: "#1F2937",
+  },
+  fence: {
+    backgroundColor: "#F3F4F6",
+    borderRadius: 8,
+    padding: 10,
+    fontSize: 13,
+    fontFamily: "monospace",
+  },
+};
