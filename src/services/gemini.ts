@@ -3,7 +3,7 @@ import { buildManualContext, SYSTEM_PROMPT } from "../data/manuals";
 
 const API_KEY = Constants.expoConfig?.extra?.GEMINI_API_KEY;
 const API_URL = "https://openrouter.ai/api/v1/chat/completions";
-const MODEL = "meta-llama/llama-3.3-70b-instruct:free";
+const MODEL = "google/gemini-2.0-flash-exp:free";
 
 export interface Message {
   id: string;
